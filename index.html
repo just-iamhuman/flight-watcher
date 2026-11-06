@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flight Price Watcher — Nia's NYC ↔ ILM Trip</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "Aktiv", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #080F12;
+    color: #F5FCFF;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    margin: 0;
+    padding: 0;
+  }
+
+  .wrapper {
+    width: 100%;
+    min-height: 100vh;
+    background: #080F12;
+    padding: 40px 20px;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: #0D1519;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 148, 217, 0.16);
+  }
+
+  .header {
+    padding: 40px 32px 32px;
+    text-align: center;
+    background: linear-gradient(135deg, #005881 0%, #0094D9 100%);
+    color: #F5FCFF;
+  }
+
+  .header h1 {
+    font-family: "Calvert", Georgia, serif;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .header .subtitle {
+    font-size: 16px;
+    color: #C2D1D9;
+  }
+
+  .header .brand-strip {
+    height: 4px;
+    background: #FFF200;
+    width: 64px;
+    margin: 24px auto 0;
+    border-radius: 2px;
+  }
+
+  .body {
+    padding: 32px;
+  }
+
+  .greeting {
+    font-size: 20px;
+    font-weight: 600;
+    color: #F5FCFF;
+    margin-bottom: 8px;
+  }
+
+  .greeting .name { color: #0094D9; }
+
+  .intro {
+    font-size: 14px;
+    color: #C2D1D9;
+    margin-bottom: 32px;
+  }
+
+  .last-updated {
+    font-size: 12px;
+    color: #82929C;
+    margin-bottom: 32px;
+    font-family: "SF Mono", "Fira Code", monospace;
+  }
+
+  .section-title {
+    font-family: "Calvert", Georgia, serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #F5FCFF;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title .dot {
+    width: 8px;
+    height: 8px;
+    background: #0094D9;
+    border-radius: 50%;
+  }
+
+  .prices-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 32px;
+  }
+
+  .prices-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #0094D9;
+    padding: 16px;
+    border-bottom: 1px solid rgba(0, 148, 217, 0.24);
+  }
+
+  .prices-table td {
+    font-size: 14px;
+    padding: 16px;
+    border-bottom: 1px solid rgba(0, 148, 217, 0.12);
+    color: #F5FCFF;
+  }
+
+  .prices-table tr:last-child td { border-bottom: none; }
+  .prices-table tr:hover { background: rgba(0, 148, 217, 0.06); }
+
+  .route-path { font-weight: 600; color: #0094D9; }
+  .flight-path { font-size: 12px; color: #C2D1D9; font-family: "SF Mono", "Fira Code", monospace; }
+  .price-cell { font-weight: 700; font-size: 16px; }
+  .price-drop { color: #2ED573; }
+  .price-increase { color: #FF4757; }
+  .price-neutral { color: #C2D1D9; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-down { background: rgba(46, 213, 115, 0.16); color: #2ED573; border: 1px solid rgba(46, 213, 115, 0.32); }
+  .badge-up { background: rgba(255, 71, 87, 0.16); color: #FF4757; border: 1px solid rgba(255, 71, 87, 0.32); }
+  .badge-neutral { background: rgba(194, 209, 217, 0.12); color: #C2D1D9; border: 1px solid rgba(194, 209, 217, 0.24); }
+
+  .tips-section {
+    background: #121C22;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 32px;
+    border: 1px solid rgba(0, 148, 217, 0.16);
+  }
+
+  .tips-section h2 {
+    font-family: "Calvert", Georgia, serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #F5FCFF;
+    margin-bottom: 20px;
+  }
+
+  .tip-card {
+    background: rgba(0, 148, 217, 0.06);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(0, 148, 217, 0.12);
+  }
+
+  .tip-card h3 {
+    font-family: "Calvert", Georgia, serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #F5FCFF;
+    margin-bottom: 8px;
+  }
+
+  .tip-card p {
+    font-size: 13px;
+    color: #C2D1D9;
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+
+  .tip-links { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .tip-link {
+    display: inline-block;
+    background: #0094D9;
+    color: #F5FCFF;
+    text-decoration: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    text-align: center;
+    border: 1px solid rgba(0, 148, 217, 0.4);
+  }
+
+  .tip-link:hover { background: #38B6FF; }
+
+  .tip-link.yellow {
+    background: #FFF200;
+    color: #080F12;
+  }
+
+  .tip-link.yellow:hover { background: #FFE600; }
+
+  .tip-link.secondary {
+    background: transparent;
+    color: #0094D9;
+    border: 1px solid rgba(0, 148, 217, 0.32);
+  }
+
+  .tip-link.secondary:hover { background: rgba(0, 148, 217, 0.12); }
+
+  .cta {
+    background: linear-gradient(135deg, #005881 0%, #0094D9 100%);
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .cta h2 {
+    font-family: "Calvert", Georgia, serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #F5FCFF;
+    margin-bottom: 8px;
+  }
+
+  .cta p {
+    font-size: 13px;
+    color: #C2D1D9;
+    margin-bottom: 20px;
+  }
+
+  .cta-button {
+    display: inline-block;
+    background: #FFF200;
+    color: #080F12;
+    text-decoration: none;
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  .cta-button:hover { background: #FFE600; }
+
+  .footer {
+    padding: 32px;
+    font-size: 12px;
+    color: #82929C;
+    text-align: center;
+    border-top: 1px solid rgba(0, 148, 217, 0.16);
+  }
+
+  .footer p { margin: 4px 0; }
+  .footer a { color: #0094D9; text-decoration: none; }
+  .footer .divider { display: inline-block; margin: 0 8px; color: #4B5A64; }
+
+  @media (max-width: 600px) {
+    .wrapper { padding: 20px 16px; }
+    .body { padding: 24px; }
+    .cta-button, .tip-link { display: block; width: 100%; text-align: center; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="container">
+    <div class="header">
+      <h1>Flight Price Watcher</h1>
+      <div class="brand-strip"></div>
+      <p class="subtitle">Nia's Trip: NYC Metro ↔ Wilmington (ILM) • Nov 14–17, 2026</p>
+    </div>
+
+    <div class="body">
+      <div class="greeting">Hi <span class="name">Nia</span>,</div>
+      <p class="intro">This page shows your flight prices from New York to Wilmington, NC. Updated automatically — no login required.</p>
+      <div class="last-updated">Last updated: {{LAST_UPDATED}}</div>
+
+      <div class="section-title"><span class="dot"></span> Current Prices & Flight Paths</div>
+      <table class="prices-table">
+        <thead>
+          <tr>
+            <th>Route</th>
+            <th>Airline</th>
+            <th>Date</th>
+            <th>Price</th>
+            <th>Change</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{ROUTES_TABLE}}
+        </tbody>
+      </table>
+
+      <div class="tips-section">
+        <h2>Tips, Trips & Recommendations</h2>
+
+        <div class="tip-card">
+          <h3>💡 Book on Tuesday or Wednesday</h3>
+          <p>Airline prices typically drop mid-week. Check Tue–Wed for the best fares on your NYC → ILM route.</p>
+          <div class="tip-links">
+            <a href="https://www.google.com/travel/flights?q=flights+NYC+to+ILM+Nov+14-17+2026" class="tip-link yellow" target="_blank">Google Flights</a>
+            <a href="https://www.kayak.com/flights/NYC-ILM/2026-11-14/2026-11-17" class="tip-link" target="_blank">Kayak</a>
+            <a href="https://www.skyscanner.com/transport/flights/nyc/ilm/" class="tip-link" target="_blank">Skyscanner</a>
+          </div>
+        </div>
+
+        <div class="tip-card">
+          <h3>✈️ Airlines Serving This Route</h3>
+          <p>Breeze Airways, American Airlines, and United Airlines operate flights between NYC area airports and Wilmington (ILM).</p>
+          <div class="tip-links">
+            <a href="https://www.flybreeze.com" class="tip-link" target="_blank">Breeze Airways</a>
+            <a href="https://www.aa.com" class="tip-link" target="_blank">American Airlines</a>
+            <a href="https://www.united.com" class="tip-link" target="_blank">United Airlines</a>
+          </div>
+        </div>
+
+        <div class="tip-card">
+          <h3>📱 Best Booking Tools</h3>
+          <p>Compare prices across multiple sites before booking. Set up price alerts on Google Flights to catch drops instantly.</p>
+          <div class="tip-links">
+            <a href="https://www.google.com/travel/flights" class="tip-link yellow" target="_blank">Google Flights</a>
+            <a href="https://www.hopper.com" class="tip-link" target="_blank">Hopper</a>
+            <a href="https://www.expedia.com" class="tip-link" target="_blank">Expedia</a>
+          </div>
+        </div>
+
+        <div class="tip-card">
+          <h3>💰 Price Alert Tip</h3>
+          <p>This watcher emails you when prices drop. Book when you see a green "down" badge — fares on this route can change quickly.</p>
+        </div>
+      </div>
+
+      <div class="cta">
+        <h2>Get Email Updates</h2>
+        <p>Flight price updates are sent to your inbox automatically. No need to check this page manually.</p>
+        <a href="mailto:beahuman@icloud.com?subject=Flight%20Price%20Updates%20-%20Nia" class="cta-button">Reply to Dad's Assistant</a>
+      </div>
+
+      <div class="footer">
+        <p>Flight Price Watcher from Dad's Assistant • NYC Metro ↔ ILM</p>
+        <p>
+          <a href="mailto:beahuman@icloud.com">Reply to Dad</a>
+          <span class="divider">•</span>
+          Public page — no sign-in required
+        </p>
+        <p>Prices checked via Ignav + SerpAPI • Notahuman Ecosystem</p>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
